@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examify Teacher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(34, 197, 94, 0.2); }
+        .glow-green { box-shadow: 0 0 25px rgba(34, 197, 94, 0.4); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-emerald-500 selection:text-white">
+
+    <!-- AUTH SCREEN -->
+    <div id="authScreen" class="flex items-center justify-center min-h-screen p-4">
+        <div class="glass p-8 rounded-2xl w-full max-w-md glow-green relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 bg-emerald-500/10 rounded-2xl border border-emerald-500/30 text-emerald-400 text-3xl mb-3">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <h1 id="authTitle" class="text-2xl font-bold tracking-wider text-emerald-400">EXAMIFY TEACHER</h1>
+                <p id="authSubtitle" class="text-xs text-slate-400 mt-1">Portal Guru & Pembuat Soal</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div id="regFields" class="hidden space-y-4">
+                    <div>
+                        <label class="text-xs text-slate-300 font-medium">NAMA GURU</label>
+                        <input type="text" id="regName" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Bapak Ahmad S.Pd.">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-medium">MATA PELAJARAN</label>
+                        <input type="text" id="regSubject" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Matematika Minat">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-300 font-medium">NOMOR GURU</label>
+                        <input type="text" id="regNo" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="GR-01">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-300 font-medium">KODE IDENTIK PERANGKAT</label>
+                    <input type="text" id="deviceCode" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="TCH-01">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-300 font-medium">SANDI</label>
+                    <input type="password" id="authPassword" required class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="••••••••">
+                </div>
+
+                <div id="loginErrorBox" class="hidden bg-rose-500/10 border border-rose-500/30 p-3 rounded-xl text-rose-400 text-xs space-y-2">
+                    <p class="font-semibold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Sandi salah! Minta sandi ke Operator</p>
+                    <button type="button" onclick="requestPasswordToOperator()" class="w-full py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg font-bold transition">Minta Sandi ke Operator</button>
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 rounded-xl font-bold text-white shadow-lg shadow-emerald-500/25 transition">MASUK PORTAL GURU</button>
+
+                <div class="text-center pt-2">
+                    <button type="button" onclick="toggleAuthMode()" id="toggleAuthText" class="text-xs text-emerald-400 hover:underline font-semibold">Belum buat akun? Buat disini</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="mainDashboard" class="hidden min-h-screen flex flex-col">
+        <header class="glass border-b border-emerald-500/20 px-6 py-4 flex flex-wrap justify-between items-center gap-4 sticky top-0 z-50">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-emerald-400"><i class="fa-solid fa-chalkboard-user text-xl"></i></div>
+                <div>
+                    <h2 id="teacherHeaderTitle" class="font-bold text-emerald-400 tracking-wider text-sm">Examify Teacher</h2>
+                    <p class="text-xs text-slate-400">MAN 1's Server</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-800 text-xs font-semibold">
+                    <i class="fa-regular fa-clock text-emerald-400 mr-1.5"></i><span id="liveClock">--:--:--</span> WIB
+                </div>
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="p-2.5 bg-slate-900 border border-slate-800 rounded-xl text-emerald-400 relative">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="notifBadge" class="absolute -top-1 -right-1 w-5 h-5 bg-rose-600 text-white rounded-full text-[10px] font-bold flex items-center justify-center">0</span>
+                    </button>
+                    <div id="notifDropdown" class="hidden absolute right-0 mt-2 w-80 glass rounded-2xl border border-emerald-500/30 p-4 space-y-3 z-50">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase">Notifikasi Pelanggaran</h4>
+                        <div id="notifList" class="space-y-2 max-h-60 overflow-y-auto text-xs"><p class="text-slate-500 text-center py-2">Belum ada pelanggaran.</p></div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="bg-slate-900/80 border-b border-slate-800 px-6 flex space-x-6 text-sm font-semibold">
+            <button onclick="switchTab('create')" id="btnTabCreate" class="py-3.5 border-b-2 border-emerald-400 text-emerald-400 transition">Buat Soal</button>
+            <button onclick="switchTab('grading')" id="btnTabGrading" class="py-3.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">Koreksi Soal</button>
+            <button onclick="switchTab('database')" id="btnTabDatabase" class="py-3.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">Database Nilai</button>
+            <button onclick="switchTab('report')" id="btnTabReport" class="py-3.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">Report Issue</button>
+        </nav>
+
+        <main class="flex-1 p-6 max-w-5xl mx-auto w-full">
+            <div id="tabCreate" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-slate-200"><i class="fa-solid fa-file-pen text-emerald-400 mr-2"></i>Form Pembuatan Soal</h3>
+                    <div class="space-x-2">
+                        <button onclick="addNewQuestionBox()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold rounded-xl text-xs transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Nomor Soal</button>
+                        <button onclick="releaseExam()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition"><i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Rilis Soal</button>
+                    </div>
+                </div>
+
+                <div class="glass p-6 rounded-2xl border border-emerald-500/20 space-y-4">
+                    <div>
+                        <label class="text-xs text-slate-300 font-medium">JUDUL UJIAN</label>
+                        <input type="text" id="examTitleInput" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500" value="Matematika Minat - XI IPA 1">
+                    </div>
+                </div>
+
+                <!-- Container Daftar Soal -->
+                <div id="questionsContainer" class="space-y-4">
+                    <div class="glass p-6 rounded-2xl border border-emerald-500/20 space-y-4 question-card" data-index="1">
+                        <div class="flex justify-between items-center">
+                            <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs font-bold">Soal No. 1</span>
+                            <select onchange="toggleQuestionFormat(this)" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-emerald-500">
+                                <option value="pg">Pilihan Ganda (PG)</option>
+                                <option value="essay">Esai (Uraian)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-300 font-medium">PERTANYAAN</label>
+                            <textarea rows="3" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Tuliskan soal..."></textarea>
+                        </div>
+                        <div class="options-container space-y-2">
+                            <label class="text-xs text-slate-300 font-medium">PILIHAN JAWABAN (PG)</label>
+                            <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi A"></div>
+                            <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi B"></div>
+                            <button type="button" onclick="addOption(this)" class="mt-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg text-xs font-bold transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Opsi Jawaban</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tabGrading" class="hidden space-y-4">
+                <h3 class="text-lg font-bold text-slate-200"><i class="fa-solid fa-marker text-emerald-400 mr-2"></i>Koreksi Nilai Siswa</h3>
+                <div class="glass p-5 rounded-2xl">
+                    <table class="w-full text-left text-sm">
+                        <thead><tr class="border-b border-slate-800 text-slate-400"><th class="p-3">Nama</th><th class="p-3">Nilai PG</th><th class="p-3">Esai</th><th class="p-3">Total</th></tr></thead>
+                        <tbody><tr class="border-b border-slate-800/50"><td class="p-3 font-semibold">Rahmat Setiawan [SM56]</td><td class="p-3 text-emerald-400">85</td><td class="p-3"><input type="number" class="w-16 bg-slate-900 border border-slate-700 rounded p-1 text-center" value="15"></td><td class="p-3 font-bold text-emerald-400">100</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tabDatabase" class="hidden space-y-4">
+                <h3 class="text-lg font-bold text-slate-200"><i class="fa-solid fa-folder-open text-emerald-400 mr-2"></i>Database Nilai</h3>
+                <div class="glass p-4 rounded-xl border border-emerald-500/20 flex items-center space-x-3"><i class="fa-solid fa-folder text-amber-400 text-2xl"></i><div><h4 class="text-sm font-bold">Kelas XI IPA 1</h4><p class="text-[10px] text-slate-400">Folder Nilai</p></div></div>
+            </div>
+
+            <div id="tabReport" class="hidden space-y-4">
+                <h3 class="text-lg font-bold text-slate-200"><i class="fa-solid fa-headset text-emerald-400 mr-2"></i>Lapor Kendala Guru</h3>
+                <div class="glass p-6 rounded-2xl space-y-4 max-w-xl">
+                    <textarea rows="4" id="teacherReportMsg" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm focus:outline-none focus:border-emerald-500" placeholder="Tuliskan kendala..."></textarea>
+                    <button onclick="sendTeacherReport()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition">Kirim Laporan</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let isRegisterMode = false;
+        let currentTeacher = {};
+        let lastNotifCount = 0;
+        let questionCount = 1;
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            const regFields = document.getElementById('regFields');
+            const title = document.getElementById('authTitle');
+            const sub = document.getElementById('authSubtitle');
+            const btn = document.getElementById('authSubmitBtn');
+            const toggleText = document.getElementById('toggleAuthText');
+
+            if(isRegisterMode) {
+                regFields.classList.remove('hidden');
+                title.innerText = "REGISTRASI GURU";
+                sub.innerText = "Daftarkan akun & perangkat guru";
+                btn.innerText = "DAFTARKAN AKUN GURU";
+                toggleText.innerText = "Sudah punya akun? Login disini";
+            } else {
+                regFields.classList.add('hidden');
+                title.innerText = "EXAMIFY TEACHER";
+                sub.innerText = "Portal Guru & Pembuat Soal";
+                btn.innerText = "MASUK PORTAL GURU";
+                toggleText.innerText = "Belum buat akun? Buat disini";
+            }
+        }
+
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const deviceCode = document.getElementById('deviceCode').value.trim();
+            const pass = document.getElementById('authPassword').value.trim();
+            let teachers = JSON.parse(localStorage.getItem('db_teachers') || '[]');
+
+            if(isRegisterMode) {
+                const name = document.getElementById('regName').value.trim();
+                const subject = document.getElementById('regSubject').value.trim();
+                const regNo = document.getElementById('regNo').value.trim();
+
+                if(!name || !subject || !regNo || !deviceCode || !pass) {
+                    alert("Semua kolom registrasi wajib diisi!");
+                    return;
+                }
+
+                teachers.push({ name, subject, regNo, deviceCode, pass });
+                localStorage.setItem('db_teachers', JSON.stringify(teachers));
+                alert("Registrasi guru berhasil! Silakan login.");
+                toggleAuthMode();
+                return;
+            }
+
+            const found = teachers.find(t => t.deviceCode === deviceCode && t.pass === pass);
+            if(!found) {
+                document.getElementById('loginErrorBox').classList.remove('hidden');
+                return;
+            }
+
+            currentTeacher = found;
+            document.getElementById('authScreen').classList.add('hidden');
+            document.getElementById('mainDashboard').classList.remove('hidden');
+            document.getElementById('teacherHeaderTitle').innerText = `${currentTeacher.name} (${currentTeacher.subject})`;
+            
+            // Izin notifikasi sistem langsung muncul saat guru masuk halaman utama
+            if("Notification" in window) Notification.requestPermission();
+            
+            setInterval(checkRealtimeUpdates, 1500);
+        });
+
+        function requestPasswordToOperator() {
+            const devCode = document.getElementById('deviceCode').value.trim() || "Unknown";
+            let reports = JSON.parse(localStorage.getItem('operator_reports') || '[]');
+            reports.push({ id: Date.now(), deviceCode: devCode, sender: "Guru (" + devCode + ")", message: "Minta sandi portal guru baru.", status: "unread", time: new Date().toLocaleTimeString() });
+            localStorage.setItem('operator_reports', JSON.stringify(reports));
+            alert("Permintaan sandi terkirim ke Operator.");
+        }
+
+        function toggleQuestionFormat(selectElement) {
+            const type = selectElement.value;
+            const container = selectElement.closest('.question-card').querySelector('.options-container');
+            if(type === 'essay') {
+                container.innerHTML = `<label class="text-xs text-slate-300 font-medium">RUBRIK PENILAIAN / KUNCI JAWABAN ESAI</label><textarea rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Kunci jawaban esai..."></textarea>`;
+            } else {
+                container.innerHTML = `
+                    <label class="text-xs text-slate-300 font-medium">PILIHAN JAWABAN (PG)</label>
+                    <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi A"></div>
+                    <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi B"></div>
+                    <button type="button" onclick="addOption(this)" class="mt-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg text-xs font-bold transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Opsi Jawaban</button>
+                `;
+            }
+        }
+
+        function addOption(buttonElement) {
+            const container = buttonElement.closest('.options-container');
+            const optionCount = container.querySelectorAll('input').length + 1;
+            const optionLetter = String.fromCharCode(64 + optionCount); // A, B, C, D, dst.
+
+            const newDiv = document.createElement('div');
+            newDiv.className = "flex items-center space-x-2 mt-2";
+            newDiv.innerHTML = `<input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi ${optionLetter}">`;
+            container.insertBefore(newDiv, buttonElement);
+        }
+
+        function addNewQuestionBox() {
+            questionCount++;
+            const container = document.getElementById('questionsContainer');
+            const card = document.createElement('div');
+            card.className = "glass p-6 rounded-2xl border border-emerald-500/20 space-y-4 question-card";
+            card.setAttribute('data-index', questionCount);
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs font-bold">Soal No. ${questionCount}</span>
+                    <select onchange="toggleQuestionFormat(this)" class="bg-slate-900 border border-slate-700 rounded-lg p-2 text-xs focus:outline-none focus:border-emerald-500">
+                        <option value="pg">Pilihan Ganda (PG)</option>
+                        <option value="essay">Esai (Uraian)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-300 font-medium">PERTANYAAN</label>
+                    <textarea rows="3" class="w-full mt-1 bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500" placeholder="Tuliskan soal..."></textarea>
+                </div>
+                <div class="options-container space-y-2">
+                    <label class="text-xs text-slate-300 font-medium">PILIHAN JAWABAN (PG)</label>
+                    <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi A"></div>
+                    <div class="flex items-center space-x-2"><input type="text" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-sm" placeholder="Opsi B"></div>
+                    <button type="button" onclick="addOption(this)" class="mt-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-emerald-400 rounded-lg text-xs font-bold transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Opsi Jawaban</button>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        function releaseExam() {
+            const title = document.getElementById('examTitleInput').value.trim();
+            localStorage.setItem('exam_released', 'true');
+            let qUpdates = JSON.parse(localStorage.getItem('operator_questions') || '[]');
+            qUpdates.push({ title: title, teacher: currentTeacher.name, time: new Date().toLocaleTimeString() });
+            localStorage.setItem('operator_questions', JSON.stringify(qUpdates));
+            alert("Soal berhasil dirilis ke Operator & Siswa!");
+        }
+
+        function checkRealtimeUpdates() {
+            let replies = JSON.parse(localStorage.getItem('operator_replies') || '{}');
+            if(replies[currentTeacher.deviceCode]) {
+                alert("Pesan/Sandi baru dari Operator: " + replies[currentTeacher.deviceCode]);
+                delete replies[currentTeacher.deviceCode];
+                localStorage.setItem('operator_replies', JSON.stringify(replies));
+            }
+
+            let violations = JSON.parse(localStorage.getItem('operator_violations') || '[]');
+            document.getElementById('notifBadge').innerText = violations.length;
+            if(violations.length > lastNotifCount) {
+                if("vibrate" in navigator) navigator.vibrate([200, 100, 200]);
+                if(Notification.permission === "granted") new Notification("Examify Alert", { body: "Pelanggaran siswa terdeteksi!" });
+                lastNotifCount = violations.length;
+            }
+            if(violations.length > 0) {
+                let html = '';
+                violations.forEach(v => { html += `<div class="p-2 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-300"><b>${v.student}</b>: ${v.reason}</div>`; });
+                document.getElementById('notifList').innerHTML = html;
+            }
+        }
+
+        function toggleNotifications() { document.getElementById('notifDropdown').classList.toggle('hidden'); }
+        function sendTeacherReport() {
+            const msg = document.getElementById('teacherReportMsg').value.trim();
+            if(!msg) return;
+            let reports = JSON.parse(localStorage.getItem('operator_reports') || '[]');
+            reports.push({ id: Date.now(), deviceCode: currentTeacher.deviceCode, sender: currentTeacher.name + " (Guru)", message: msg, status: "unread", time: new Date().toLocaleTimeString() });
+            localStorage.setItem('operator_reports', JSON.stringify(reports));
+            alert("Laporan terkirim.");
+            document.getElementById('teacherReportMsg').value = '';
+        }
+
+        function switchTab(t) {
+            ['create', 'grading', 'database', 'report'].forEach(tab => {
+                document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('hidden');
+                document.getElementById('btnTab' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "py-3.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+            });
+            document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.remove('hidden');
+            document.getElementById('btnTab' + t.charAt(0).toUpperCase() + t.slice(1)).className = "py-3.5 border-b-2 border-emerald-400 text-emerald-400 transition";
+        }
+        setInterval(() => { document.getElementById('liveClock').innerText = new Date().toTimeString().split(' ')[0]; }, 1000);
+    </script>
+</body>
+</html>
